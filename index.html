@@ -2,7 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>MAISON MARGIELA</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400&family=Montserrat:wght@100;200;300&display=swap');
@@ -17,10 +20,17 @@
     body {
       background: #060606;
       width: 100vw;
-      height: 100vh;
+      height: 100svh;
       overflow: hidden;
       cursor: none;
       font-family: 'Montserrat', sans-serif;
+      touch-action: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    @media (pointer: coarse) {
+      body { cursor: auto; }
+      #cursor, #cursor-ring { display: none; }
     }
 
     /* ── star field ── */
@@ -90,7 +100,7 @@
       text-align: center;
     }
 
-    /* sizes */
+    /* sizes — desktop */
     .size-lg  .brand { font-size: clamp(18px, 3.2vw, 42px); }
     .size-lg  .time-display { font-size: clamp(13px, 2vw, 26px); margin-top: 4px; }
 
@@ -99,6 +109,18 @@
 
     .size-sm  .brand { font-size: clamp(9px, 1.2vw, 16px); }
     .size-sm  .time-display { font-size: clamp(7px, 0.85vw, 12px); margin-top: 1px; }
+
+    /* sizes — mobile override (pointer: coarse = touchscreen) */
+    @media (pointer: coarse) {
+      .size-lg  .brand { font-size: clamp(16px, 6vw, 32px); }
+      .size-lg  .time-display { font-size: clamp(11px, 3.5vw, 20px); }
+
+      .size-md  .brand { font-size: clamp(11px, 3.8vw, 20px); }
+      .size-md  .time-display { font-size: clamp(9px, 2.4vw, 14px); }
+
+      .size-sm  .brand { font-size: clamp(8px, 2.4vw, 13px); }
+      .size-sm  .time-display { font-size: clamp(6px, 1.8vw, 10px); }
+    }
 
     /* glow effect on hover */
     .clock-card:hover .brand,
@@ -175,13 +197,14 @@
     /* ── interaction hint ── */
     #hint {
       position: fixed;
-      bottom: 32px;
+      bottom: max(32px, env(safe-area-inset-bottom, 32px));
       left: 50%;
       transform: translateX(-50%);
       font-size: 10px;
       letter-spacing: 0.3em;
       color: rgba(255,255,255,0.2);
       text-transform: uppercase;
+      white-space: nowrap;
       z-index: 10;
       transition: opacity 1s;
     }
@@ -196,7 +219,7 @@
 <div id="vignette"></div>
 <div id="cursor"></div>
 <div id="cursor-ring"></div>
-<p id="hint">CLICK · MOVE · EXPERIENCE</p>
+<p id="hint">TOUCH · TILT · EXPERIENCE</p>
 
 <script>
 /* ── CONFIG ── */
@@ -291,48 +314,117 @@ function updateTime() {
 setInterval(updateTime, 1000);
 updateTime();
 
-/* ── CURSOR ── */
+/* ── DETECT TOUCH ── */
+const isTouch = window.matchMedia('(pointer: coarse)').matches;
+
+/* ── CURSOR (desktop only) ── */
 const cursor     = document.getElementById('cursor');
 const cursorRing = document.getElementById('cursor-ring');
 const orb        = document.getElementById('orb');
 let mx = window.innerWidth / 2, my = window.innerHeight / 2;
 
-document.addEventListener('mousemove', e => {
-  mx = e.clientX; my = e.clientY;
-  cursor.style.left     = mx + 'px';
-  cursor.style.top      = my + 'px';
-  cursorRing.style.left = mx + 'px';
-  cursorRing.style.top  = my + 'px';
-  orb.style.left = mx + 'px';
-  orb.style.top  = my + 'px';
-});
+if (!isTouch) {
+  document.addEventListener('mousemove', e => {
+    mx = e.clientX; my = e.clientY;
+    cursor.style.left     = mx + 'px';
+    cursor.style.top      = my + 'px';
+    cursorRing.style.left = mx + 'px';
+    cursorRing.style.top  = my + 'px';
+    orb.style.left = mx + 'px';
+    orb.style.top  = my + 'px';
+  });
+}
 
-/* ── RIPPLE ON CLICK ── */
-document.addEventListener('click', e => {
+/* ── GYRO PARALLAX (mobile) ── */
+let gyroX = 0, gyroY = 0;
+let gyroActive = false;
+
+if (isTouch) {
+  // request permission on iOS 13+
+  function enableGyro() {
+    if (typeof DeviceOrientationEvent !== 'undefined' &&
+        typeof DeviceOrientationEvent.requestPermission === 'function') {
+      DeviceOrientationEvent.requestPermission()
+        .then(state => { if (state === 'granted') attachGyro(); })
+        .catch(() => {});
+    } else {
+      attachGyro();
+    }
+  }
+
+  function attachGyro() {
+    window.addEventListener('deviceorientation', e => {
+      // gamma = left/right tilt (-90…90), beta = front/back (-180…180)
+      gyroX = Math.max(-30, Math.min(30, e.gamma || 0)) / 30; // -1…1
+      gyroY = Math.max(-30, Math.min(30, (e.beta  || 0) - 30)) / 30;
+      gyroActive = true;
+      // move orb
+      orb.style.left = (50 + gyroX * 30) + 'vw';
+      orb.style.top  = (50 + gyroY * 30) + 'vh';
+    }, { passive: true });
+  }
+
+  // try enabling immediately (Android), or wait for first touch (iOS)
+  enableGyro();
+  document.addEventListener('touchstart', enableGyro, { once: true, passive: true });
+}
+
+/* ── FIRE RIPPLE + SHAKE ── */
+function fireRipple(x, y) {
   const r = document.createElement('div');
   r.className = 'ripple';
   const size = Math.min(window.innerWidth, window.innerHeight) * 0.6;
   r.style.width  = size + 'px';
   r.style.height = size + 'px';
-  r.style.left   = e.clientX + 'px';
-  r.style.top    = e.clientY + 'px';
+  r.style.left   = x + 'px';
+  r.style.top    = y + 'px';
   document.body.appendChild(r);
   setTimeout(() => r.remove(), 900);
 
-  // vibrate all cards slightly
+  // haptic (mobile)
+  if (navigator.vibrate) navigator.vibrate([10, 30, 10]);
+
   for (const el of cardEls) {
     el.style.transition = 'transform 0.05s ease';
     const dx = (Math.random() - 0.5) * 8;
     const dy = (Math.random() - 0.5) * 8;
     el.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
-    setTimeout(() => {
-      el.style.transform = 'translate(-50%, -50%)';
-    }, 120);
+    setTimeout(() => { el.style.transform = 'translate(-50%, -50%)'; }, 120);
   }
-});
+}
 
-/* ── HIDE HINT ── */
+/* ── RIPPLE ON CLICK (desktop) ── */
+if (!isTouch) {
+  document.addEventListener('click', e => fireRipple(e.clientX, e.clientY));
+}
+
+/* ── TOUCH EVENTS (mobile) ── */
+if (isTouch) {
+  document.addEventListener('touchmove', e => {
+    e.preventDefault();
+    const t = e.touches[0];
+    mx = t.clientX; my = t.clientY;
+    orb.style.left = mx + 'px';
+    orb.style.top  = my + 'px';
+  }, { passive: false });
+
+  document.addEventListener('touchend', e => {
+    const t = e.changedTouches[0];
+    fireRipple(t.clientX, t.clientY);
+  }, { passive: true });
+}
+
+/* ── GLITCH on card tap ── */
+for (const el of cardEls) {
+  el.addEventListener('touchstart', () => {
+    el.classList.add('glitch');
+    setTimeout(() => el.classList.remove('glitch'), 300);
+  }, { passive: true });
+}
+
+/* ── HINT TEXT ── */
 const hint = document.getElementById('hint');
+hint.textContent = isTouch ? 'TOUCH · TILT · EXPERIENCE' : 'CLICK · MOVE · EXPERIENCE';
 setTimeout(() => hint.style.opacity = '0', 4000);
 
 /* ── MAIN LOOP ── */
@@ -344,11 +436,17 @@ function loop(t) {
 
   drawStars(t * 0.001);
 
-  // parallax — mouse offset from center
-  const cx = window.innerWidth  / 2;
-  const cy = window.innerHeight / 2;
-  const normX = (mx - cx) / cx;   // -1 … 1
-  const normY = (my - cy) / cy;
+  // parallax
+  let normX, normY;
+  if (isTouch && gyroActive) {
+    normX = gyroX;
+    normY = gyroY;
+  } else {
+    const cx = window.innerWidth  / 2;
+    const cy = window.innerHeight / 2;
+    normX = (mx - cx) / cx;
+    normY = (my - cy) / cy;
+  }
 
   for (const el of cardEls) {
     const px = normX * 30 * el._drift.x * 1000;
