@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MAISON MARGIELA</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400&family=Montserrat:wght@100;200;300&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --glow: rgba(255, 255, 255, 0.85);
+      --dim: rgba(255, 255, 255, 0.18);
+    }
+
+    body {
+      background: #060606;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      cursor: none;
+      font-family: 'Montserrat', sans-serif;
+    }
+
+    /* ── star field ── */
+    #stars {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── custom cursor ── */
+    #cursor {
+      position: fixed;
+      width: 6px;
+      height: 6px;
+      background: white;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 9999;
+      transform: translate(-50%, -50%);
+      transition: transform 0.08s ease, opacity 0.2s;
+    }
+    #cursor-ring {
+      position: fixed;
+      width: 36px;
+      height: 36px;
+      border: 1px solid rgba(255,255,255,0.4);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 9998;
+      transform: translate(-50%, -50%);
+      transition: transform 0.18s ease, width 0.2s, height 0.2s, border-color 0.2s;
+    }
+
+    /* ── scene ── */
+    #scene {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+    }
+
+    /* ── clock card ── */
+    .clock-card {
+      position: absolute;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      user-select: none;
+      transition: opacity 0.4s;
+    }
+
+    .brand {
+      font-weight: 200;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--glow);
+      line-height: 1.1;
+      text-align: center;
+    }
+
+    .time-display {
+      font-weight: 100;
+      letter-spacing: 0.18em;
+      color: var(--glow);
+      text-align: center;
+    }
+
+    /* sizes */
+    .size-lg  .brand { font-size: clamp(18px, 3.2vw, 42px); }
+    .size-lg  .time-display { font-size: clamp(13px, 2vw, 26px); margin-top: 4px; }
+
+    .size-md  .brand { font-size: clamp(13px, 2vw, 26px); }
+    .size-md  .time-display { font-size: clamp(10px, 1.2vw, 18px); margin-top: 2px; }
+
+    .size-sm  .brand { font-size: clamp(9px, 1.2vw, 16px); }
+    .size-sm  .time-display { font-size: clamp(7px, 0.85vw, 12px); margin-top: 1px; }
+
+    /* glow effect on hover */
+    .clock-card:hover .brand,
+    .clock-card:hover .time-display {
+      text-shadow: 0 0 12px rgba(255,255,255,0.9), 0 0 28px rgba(255,255,255,0.5);
+    }
+
+    /* ── glitch overlay ── */
+    .clock-card.glitch .brand {
+      animation: glitch 0.25s steps(2) forwards;
+    }
+
+    @keyframes glitch {
+      0%   { clip-path: inset(0 0 90% 0); transform: translateX(-3px); }
+      25%  { clip-path: inset(30% 0 50% 0); transform: translateX(3px); }
+      50%  { clip-path: inset(60% 0 20% 0); transform: translateX(-2px); }
+      75%  { clip-path: inset(80% 0 5%  0); transform: translateX(2px); }
+      100% { clip-path: inset(0); transform: translateX(0); }
+    }
+
+    /* ── ripple ── */
+    .ripple {
+      position: fixed;
+      border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.35);
+      pointer-events: none;
+      z-index: 2;
+      transform: translate(-50%, -50%) scale(0);
+      animation: rippleOut 0.9s ease-out forwards;
+    }
+
+    @keyframes rippleOut {
+      to { transform: translate(-50%, -50%) scale(1); opacity: 0; }
+    }
+
+    /* ── scan line ── */
+    #scan {
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(
+        to bottom,
+        transparent 0px,
+        transparent 3px,
+        rgba(0,0,0,0.08) 3px,
+        rgba(0,0,0,0.08) 4px
+      );
+      pointer-events: none;
+      z-index: 5;
+      opacity: 0.4;
+    }
+
+    /* ── vignette ── */
+    #vignette {
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.82) 100%);
+      pointer-events: none;
+      z-index: 4;
+    }
+
+    /* ── ambient glow orb that follows cursor ── */
+    #orb {
+      position: fixed;
+      width: 320px;
+      height: 320px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255,255,255,0.04) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 3;
+      transform: translate(-50%, -50%);
+      transition: left 0.4s ease, top 0.4s ease;
+    }
+
+    /* ── interaction hint ── */
+    #hint {
+      position: fixed;
+      bottom: 32px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 10px;
+      letter-spacing: 0.3em;
+      color: rgba(255,255,255,0.2);
+      text-transform: uppercase;
+      z-index: 10;
+      transition: opacity 1s;
+    }
+  </style>
+</head>
+<body>
+
+<canvas id="stars"></canvas>
+<div id="orb"></div>
+<div id="scene"></div>
+<div id="scan"></div>
+<div id="vignette"></div>
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+<p id="hint">CLICK · MOVE · EXPERIENCE</p>
+
+<script>
+/* ── CONFIG ── */
+const CARDS = [
+  { x: 50, y: 28, size: 'lg',  drift: { x:  0.012, y:  0.008 } },
+  { x: 18, y: 62, size: 'lg',  drift: { x: -0.009, y:  0.014 } },
+  { x: 76, y: 68, size: 'lg',  drift: { x:  0.011, y: -0.01  } },
+  { x: 50, y: 72, size: 'lg',  drift: { x: -0.007, y:  0.007 } },
+  { x: 28, y: 14, size: 'md',  drift: { x:  0.018, y:  0.012 } },
+  { x: 72, y: 18, size: 'md',  drift: { x: -0.015, y:  0.009 } },
+  { x: 12, y: 38, size: 'sm',  drift: { x:  0.022, y: -0.016 } },
+  { x: 88, y: 44, size: 'sm',  drift: { x: -0.02,  y:  0.018 } },
+  { x: 60, y: 50, size: 'sm',  drift: { x:  0.014, y:  0.02  } },
+  { x: 35, y: 85, size: 'sm',  drift: { x: -0.011, y: -0.013 } },
+];
+
+/* ── STAR FIELD ── */
+const canvas = document.getElementById('stars');
+const ctx = canvas.getContext('2d');
+let stars = [];
+
+function resizeCanvas() {
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+
+function initStars() {
+  stars = Array.from({ length: 180 }, () => ({
+    x: Math.random() * canvas.width,
+    y: Math.random() * canvas.height,
+    r: Math.random() * 1.2 + 0.2,
+    a: Math.random(),
+    speed: Math.random() * 0.004 + 0.001,
+    phase: Math.random() * Math.PI * 2,
+  }));
+}
+
+function drawStars(t) {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  for (const s of stars) {
+    const alpha = 0.15 + 0.45 * (0.5 + 0.5 * Math.sin(t * s.speed + s.phase));
+    ctx.beginPath();
+    ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(255,255,255,${alpha})`;
+    ctx.fill();
+  }
+}
+
+resizeCanvas();
+initStars();
+window.addEventListener('resize', () => { resizeCanvas(); initStars(); });
+
+/* ── BUILD CLOCK CARDS ── */
+const scene = document.getElementById('scene');
+const cardEls = [];
+
+for (const cfg of CARDS) {
+  const card = document.createElement('div');
+  card.className = `clock-card size-${cfg.size}`;
+  card.innerHTML = `
+    <div class="brand">MAISON<br>MARGIELA</div>
+    <div class="time-display">00:00:00</div>`;
+  card.style.left = cfg.x + 'vw';
+  card.style.top  = cfg.y + 'vh';
+  card.style.transform = 'translate(-50%, -50%)';
+  scene.appendChild(card);
+
+  // parallax offset
+  card._ox = 0; card._oy = 0;
+  card._baseX = cfg.x; card._baseY = cfg.y;
+  card._drift = cfg.drift;
+  cardEls.push(card);
+
+  // click glitch
+  card.addEventListener('click', () => {
+    card.classList.add('glitch');
+    setTimeout(() => card.classList.remove('glitch'), 300);
+  });
+}
+
+/* ── TIME ── */
+function pad(n) { return String(n).padStart(2, '0'); }
+
+function updateTime() {
+  const now  = new Date();
+  const str  = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+  for (const el of cardEls) {
+    el.querySelector('.time-display').textContent = str;
+  }
+}
+
+setInterval(updateTime, 1000);
+updateTime();
+
+/* ── CURSOR ── */
+const cursor     = document.getElementById('cursor');
+const cursorRing = document.getElementById('cursor-ring');
+const orb        = document.getElementById('orb');
+let mx = window.innerWidth / 2, my = window.innerHeight / 2;
+
+document.addEventListener('mousemove', e => {
+  mx = e.clientX; my = e.clientY;
+  cursor.style.left     = mx + 'px';
+  cursor.style.top      = my + 'px';
+  cursorRing.style.left = mx + 'px';
+  cursorRing.style.top  = my + 'px';
+  orb.style.left = mx + 'px';
+  orb.style.top  = my + 'px';
+});
+
+/* ── RIPPLE ON CLICK ── */
+document.addEventListener('click', e => {
+  const r = document.createElement('div');
+  r.className = 'ripple';
+  const size = Math.min(window.innerWidth, window.innerHeight) * 0.6;
+  r.style.width  = size + 'px';
+  r.style.height = size + 'px';
+  r.style.left   = e.clientX + 'px';
+  r.style.top    = e.clientY + 'px';
+  document.body.appendChild(r);
+  setTimeout(() => r.remove(), 900);
+
+  // vibrate all cards slightly
+  for (const el of cardEls) {
+    el.style.transition = 'transform 0.05s ease';
+    const dx = (Math.random() - 0.5) * 8;
+    const dy = (Math.random() - 0.5) * 8;
+    el.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
+    setTimeout(() => {
+      el.style.transform = 'translate(-50%, -50%)';
+    }, 120);
+  }
+});
+
+/* ── HIDE HINT ── */
+const hint = document.getElementById('hint');
+setTimeout(() => hint.style.opacity = '0', 4000);
+
+/* ── MAIN LOOP ── */
+let lastT = 0;
+
+function loop(t) {
+  const dt = t - lastT;
+  lastT = t;
+
+  drawStars(t * 0.001);
+
+  // parallax — mouse offset from center
+  const cx = window.innerWidth  / 2;
+  const cy = window.innerHeight / 2;
+  const normX = (mx - cx) / cx;   // -1 … 1
+  const normY = (my - cy) / cy;
+
+  for (const el of cardEls) {
+    const px = normX * 30 * el._drift.x * 1000;
+    const py = normY * 30 * el._drift.y * 1000;
+    el.style.left = el._baseX + 'vw';
+    el.style.top  = el._baseY + 'vh';
+    el.style.transform = `translate(calc(-50% + ${px}px), calc(-50% + ${py}px))`;
+  }
+
+  requestAnimationFrame(loop);
+}
+
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
