@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>BLAZE — Explore the Best Natural Places</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:wght@400;700;900&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-dot" id="cursorDot"></div>
+
+<header class="nav" id="nav">
+  <div class="nav-left">
+    <a href="#" class="logo">BLAZE</a>
+  </div>
+  <div class="nav-center">
+    <span class="based-label">Based in:</span>
+    <span class="based-place">Northern Highlands</span>
+  </div>
+  <nav class="nav-right">
+    <a href="#tours" class="nav-link">Tours</a>
+    <a href="#about" class="nav-link">About</a>
+    <a href="#blog" class="nav-link">Blog</a>
+    <a href="#gallery" class="nav-link">Gallery</a>
+  </nav>
+</header>
+
+<section class="hero" id="hero">
+  <div class="hero-media">
+    <img class="hero-img"
+      src="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=2400&q=80"
+      alt="Nature scenery" />
+    <div class="hero-overlay"></div>
+    <div class="hero-grain"></div>
+  </div>
+
+  <div class="hero-content">
+    <h1 class="hero-title">
+      <span class="line"><span class="reveal">Explore the Best</span></span>
+      <span class="line"><span class="reveal">Natural Places</span></span>
+    </h1>
+
+    <p class="hero-desc">
+      We organize scenic tours, photo stops, and guided routes to
+      the most beautiful natural spots, with clear schedules, and
+      simple booking.
+    </p>
+  </div>
+
+  <div class="hero-bottom">
+    <div class="spots-pill">
+      <span class="spots-num">20+</span>
+      <span class="spots-label">SCENIC<br/>SPOTS INCLUDED</span>
+    </div>
+
+    <div class="quick-icons">
+      <button class="qicon" aria-label="Photo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="13" r="4"/><path d="M4 8h3l2-3h6l2 3h3v11H4z"/></svg></button>
+      <button class="qicon" aria-label="Map"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2z"/><path d="M9 4v14M15 6v14"/></svg></button>
+      <button class="qicon" aria-label="Compass"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="m9 15 2-6 6-2-2 6z"/></svg></button>
+    </div>
+
+    <div class="pills">
+      <button class="pill"><span class="dot">◐</span> Private Trips</button>
+      <button class="pill"><span class="dot">⇄</span> Transport Included</button>
+      <button class="pill"><span class="dot">◇</span> Custom</button>
+    </div>
+
+    <button class="mute" id="muteBtn" aria-label="Mute">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+        <path d="M5 9v6h4l5 4V5L9 9H5z"/>
+        <path class="mute-x" d="m17 9 4 6M21 9l-4 6"/>
+      </svg>
+    </button>
+  </div>
+
+  <div class="scroll-cue">
+    <span>SCROLL</span>
+    <span class="cue-line"></span>
+  </div>
+</section>
+
+<section class="marquee">
+  <div class="marquee-track">
+    <span>Mountains</span><span>·</span>
+    <span>Forests</span><span>·</span>
+    <span>Lakes</span><span>·</span>
+    <span>Sunrise</span><span>·</span>
+    <span>Wildflowers</span><span>·</span>
+    <span>Stargazing</span><span>·</span>
+    <span>Mountains</span><span>·</span>
+    <span>Forests</span><span>·</span>
+    <span>Lakes</span><span>·</span>
+    <span>Sunrise</span><span>·</span>
+    <span>Wildflowers</span><span>·</span>
+    <span>Stargazing</span><span>·</span>
+  </div>
+</section>
+
+<section class="tours" id="tours">
+  <div class="section-head">
+    <span class="eyebrow">— OUR TOURS</span>
+    <h2 class="section-title">Curated routes for every traveler.</h2>
+  </div>
+
+  <div class="cards">
+    <article class="card" data-tilt>
+      <div class="card-img">
+        <img src="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1200&q=80" alt="" />
+      </div>
+      <div class="card-body">
+        <div class="card-meta"><span>1 Day</span><span>·</span><span>Easy</span></div>
+        <h3>Highland Sunrise</h3>
+        <p>Catch the first light over rolling green ridges and misty valleys.</p>
+        <div class="card-cta">Book →</div>
+      </div>
+    </article>
+
+    <article class="card" data-tilt>
+      <div class="card-img">
+        <img src="https://images.unsplash.com/photo-1418065460487-3e41a6c84dc5?auto=format&fit=crop&w=1200&q=80" alt="" />
+      </div>
+      <div class="card-body">
+        <div class="card-meta"><span>2 Days</span><span>·</span><span>Moderate</span></div>
+        <h3>Wildflower Trail</h3>
+        <p>Photo stops through fields of orange cosmos and alpine blooms.</p>
+        <div class="card-cta">Book →</div>
+      </div>
+    </article>
+
+    <article class="card" data-tilt>
+      <div class="card-img">
+        <img src="https://images.unsplash.com/photo-1470240731273-7821a6eeb6bd?auto=format&fit=crop&w=1200&q=80" alt="" />
+      </div>
+      <div class="card-body">
+        <div class="card-meta"><span>3 Days</span><span>·</span><span>Adventure</span></div>
+        <h3>Lake & Forest Loop</h3>
+        <p>Glassy lakes, deep pine forests, and starlit lakeside camps.</p>
+        <div class="card-cta">Book →</div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section class="about" id="about">
+  <div class="about-text">
+    <span class="eyebrow">— ABOUT BLAZE</span>
+    <h2 class="section-title">Small groups. Real places. Better stories.</h2>
+    <p>
+      We design every itinerary around what makes a place memorable:
+      light, weather, season. Our local guides know the bend of every
+      trail and the hour each view turns gold.
+    </p>
+    <div class="stats">
+      <div><strong>20+</strong><span>Scenic spots</span></div>
+      <div><strong>1.2k</strong><span>Travelers</span></div>
+      <div><strong>4.9★</strong><span>Average rating</span></div>
+    </div>
+  </div>
+  <div class="about-media">
+    <img src="https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1400&q=80" alt="" />
+  </div>
+</section>
+
+<section class="gallery" id="gallery">
+  <div class="section-head">
+    <span class="eyebrow">— GALLERY</span>
+    <h2 class="section-title">Frames from the field.</h2>
+  </div>
+  <div class="gallery-grid">
+    <div class="g-item g-1"><img src="https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=900&q=80" alt=""></div>
+    <div class="g-item g-2"><img src="https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=900&q=80" alt=""></div>
+    <div class="g-item g-3"><img src="https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=900&q=80" alt=""></div>
+    <div class="g-item g-4"><img src="https://images.unsplash.com/photo-1426604966848-d7adac402bff?auto=format&fit=crop&w=900&q=80" alt=""></div>
+    <div class="g-item g-5"><img src="https://images.unsplash.com/photo-1418065460487-3e41a6c84dc5?auto=format&fit=crop&w=900&q=80" alt=""></div>
+    <div class="g-item g-6"><img src="https://images.unsplash.com/photo-1470240731273-7821a6eeb6bd?auto=format&fit=crop&w=900&q=80" alt=""></div>
+  </div>
+</section>
+
+<section class="cta" id="blog">
+  <h2>Ready for your next view?</h2>
+  <p>Send us where you want to wake up — we'll plan the rest.</p>
+  <a href="#" class="cta-btn"><span>Plan my trip</span><span class="arrow">→</span></a>
+</section>
+
+<footer class="foot">
+  <div class="foot-row">
+    <span class="logo">BLAZE</span>
+    <span class="foot-meta">© 2026 — Northern Highlands</span>
+    <span class="foot-meta">Built with vibe ✦</span>
+  </div>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>
