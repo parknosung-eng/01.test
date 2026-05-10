@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>Claude Code 한 달 성적표</title>
+<style>
+  :root {
+    --ink: #1a1a1a;
+    --paper: #faf6ee;
+    --line: #d8cfb8;
+    --accent: #b8470f;
+    --accent-soft: #f0d4b8;
+    --good: #2d6a4f;
+    --warn: #b8860b;
+    --bad: #9b2226;
+    --muted: #6b5d44;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 32px 16px;
+    background: #efe8d6;
+    font-family: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+    color: var(--ink);
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .sheet {
+    max-width: 880px;
+    margin: 0 auto;
+    background: var(--paper);
+    border: 2px solid var(--ink);
+    box-shadow: 8px 8px 0 rgba(0,0,0,0.15);
+    padding: 36px 44px 32px;
+    position: relative;
+  }
+  .sheet::before {
+    content: "";
+    position: absolute;
+    inset: 8px;
+    border: 1px solid var(--line);
+    pointer-events: none;
+  }
+  header {
+    text-align: center;
+    border-bottom: 3px double var(--ink);
+    padding-bottom: 18px;
+    margin-bottom: 22px;
+  }
+  header .eyebrow {
+    font-size: 12px;
+    letter-spacing: 6px;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+  header h1 {
+    font-size: 30px;
+    margin: 0 0 6px;
+    letter-spacing: 4px;
+  }
+  header .period {
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .meta {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+    border: 1px solid var(--ink);
+    margin-bottom: 24px;
+    background: #fff8e8;
+  }
+  .meta div {
+    padding: 10px 12px;
+    border-right: 1px solid var(--line);
+    font-size: 12px;
+  }
+  .meta div:last-child { border-right: none; }
+  .meta b {
+    display: block;
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 2px;
+    letter-spacing: 1px;
+  }
+  .meta span { font-size: 14px; }
+  h2 {
+    font-size: 14px;
+    letter-spacing: 3px;
+    margin: 22px 0 10px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid var(--ink);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  h2::before {
+    content: "■";
+    color: var(--accent);
+    font-size: 10px;
+  }
+  /* 종합 점수 카드 */
+  .summary {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    gap: 20px;
+    align-items: stretch;
+    margin-bottom: 8px;
+  }
+  .grade {
+    border: 2px solid var(--ink);
+    background: var(--accent);
+    color: #fff;
+    text-align: center;
+    padding: 18px 12px;
+    position: relative;
+  }
+  .grade .label { font-size: 11px; letter-spacing: 4px; opacity: 0.85; }
+  .grade .big { font-size: 96px; font-weight: 900; line-height: 1; margin: 6px 0 4px; }
+  .grade .score { font-size: 14px; opacity: 0.9; }
+  .grade .stamp {
+    position: absolute;
+    right: -10px;
+    bottom: -10px;
+    width: 70px; height: 70px;
+    border: 2px solid var(--bad);
+    color: var(--bad);
+    background: #faf6ee;
+    border-radius: 50%;
+    font-size: 11px;
+    font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    transform: rotate(-12deg);
+    text-align: center;
+    line-height: 1.2;
+  }
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+  .stat {
+    border: 1px solid var(--ink);
+    padding: 10px 12px;
+    background: #fff8e8;
+  }
+  .stat .num {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--accent);
+  }
+  .stat .name {
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 1px;
+  }
+  .stat .delta {
+    font-size: 10px;
+    color: var(--good);
+    margin-top: 2px;
+  }
+  .stat .delta.down { color: var(--bad); }
+
+  /* 과목별 성적 */
+  table.subjects {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    background: #fff8e8;
+  }
+  table.subjects th, table.subjects td {
+    border: 1px solid var(--ink);
+    padding: 8px 10px;
+    text-align: center;
+  }
+  table.subjects th {
+    background: var(--accent-soft);
+    font-weight: 600;
+    letter-spacing: 1px;
+    font-size: 12px;
+  }
+  table.subjects td.subject {
+    text-align: left;
+    font-weight: 600;
+    letter-spacing: 1px;
+  }
+  table.subjects td.grade-cell {
+    font-weight: 800;
+    font-size: 16px;
+  }
+  .g-S { color: #6a0dad; }
+  .g-A { color: var(--good); }
+  .g-B { color: var(--warn); }
+  .g-C { color: var(--bad); }
+  .bar {
+    display: inline-block;
+    width: 100%;
+    max-width: 140px;
+    height: 8px;
+    background: var(--accent-soft);
+    border: 1px solid var(--ink);
+    position: relative;
+    vertical-align: middle;
+  }
+  .bar > i {
+    position: absolute;
+    inset: 0 auto 0 0;
+    background: var(--accent);
+    display: block;
+  }
+
+  /* TOP / 언어 두 칼럼 */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+  }
+  .panel {
+    border: 1px solid var(--ink);
+    padding: 12px 14px;
+    background: #fff8e8;
+  }
+  .panel h3 {
+    margin: 0 0 8px;
+    font-size: 12px;
+    letter-spacing: 2px;
+    color: var(--muted);
+  }
+  .top-list {
+    list-style: none;
+    margin: 0; padding: 0;
+    font-size: 13px;
+  }
+  .top-list li {
+    display: grid;
+    grid-template-columns: 22px 1fr auto;
+    gap: 8px;
+    align-items: center;
+    padding: 4px 0;
+    border-bottom: 1px dashed var(--line);
+  }
+  .top-list li:last-child { border-bottom: none; }
+  .rank {
+    background: var(--ink);
+    color: #fff;
+    text-align: center;
+    font-size: 11px;
+    font-weight: 700;
+    border-radius: 50%;
+    width: 20px; height: 20px;
+    line-height: 20px;
+  }
+  .rank.r1 { background: #d4a017; }
+  .rank.r2 { background: #999; }
+  .rank.r3 { background: #b87333; }
+  .top-list .val { font-weight: 700; color: var(--accent); }
+
+  .lang-row {
+    display: grid;
+    grid-template-columns: 70px 1fr 50px;
+    gap: 8px;
+    align-items: center;
+    font-size: 12px;
+    margin: 4px 0;
+  }
+  .lang-bar {
+    height: 10px;
+    background: var(--accent-soft);
+    border: 1px solid var(--ink);
+    overflow: hidden;
+  }
+  .lang-bar > i {
+    display: block;
+    height: 100%;
+    background: var(--accent);
+  }
+
+  /* 활동 히트맵 */
+  .heatmap {
+    display: grid;
+    grid-template-columns: 40px repeat(24, 1fr);
+    gap: 2px;
+    font-size: 9px;
+    color: var(--muted);
+  }
+  .heatmap .hour-label,
+  .heatmap .day-label {
+    text-align: center;
+    line-height: 16px;
+  }
+  .heatmap .day-label {
+    text-align: right;
+    padding-right: 4px;
+  }
+  .heatmap .cell {
+    aspect-ratio: 1;
+    background: #efe6cf;
+    border: 1px solid #e2d8bc;
+  }
+  .h1 { background: #f4dab8; }
+  .h2 { background: #ecb789; }
+  .h3 { background: #d98b56; }
+  .h4 { background: #b8470f; }
+  .legend {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 6px;
+    justify-content: flex-end;
+  }
+  .legend .sw {
+    width: 12px; height: 12px;
+    border: 1px solid var(--line);
+    display: inline-block;
+  }
+
+  /* 한줄평 */
+  .comment {
+    border: 2px dashed var(--ink);
+    padding: 14px 16px;
+    background: #fff;
+    font-size: 13px;
+    line-height: 1.7;
+    position: relative;
+  }
+  .comment::before {
+    content: "담임 코멘트";
+    position: absolute;
+    top: -10px; left: 14px;
+    background: var(--paper);
+    padding: 0 8px;
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: var(--muted);
+  }
+  .comment .badges {
+    margin-top: 8px;
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .badge {
+    border: 1px solid var(--ink);
+    padding: 2px 8px;
+    font-size: 11px;
+    background: var(--accent-soft);
+    border-radius: 999px;
+  }
+  footer {
+    margin-top: 22px;
+    padding-top: 14px;
+    border-top: 1px solid var(--line);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px;
+    color: var(--muted);
+  }
+  .seal {
+    border: 2px solid var(--bad);
+    color: var(--bad);
+    border-radius: 50%;
+    width: 56px; height: 56px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 800;
+    transform: rotate(-8deg);
+    letter-spacing: 1px;
+  }
+
+  @media print {
+    body { background: #fff; padding: 0; }
+    .sheet { box-shadow: none; border: 2px solid var(--ink); }
+  }
+  @media (max-width: 720px) {
+    .summary { grid-template-columns: 1fr; }
+    .two-col { grid-template-columns: 1fr; }
+    .meta { grid-template-columns: repeat(2, 1fr); }
+    .meta div:nth-child(2) { border-right: none; }
+    .heatmap { grid-template-columns: 30px repeat(24, 1fr); }
+  }
+</style>
+</head>
+<body>
+<main class="sheet">
+  <header>
+    <div class="eyebrow">CLAUDE CODE MONTHLY REPORT</div>
+    <h1>한 달 성적표</h1>
+    <div class="period">2026년 04월 10일 ~ 2026년 05월 09일 · 30일간</div>
+  </header>
+
+  <section class="meta">
+    <div><b>학생</b><span>parknosung-eng</span></div>
+    <div><b>학반</b><span>Opus 4반 · 7번</span></div>
+    <div><b>담임</b><span>Claude Code</span></div>
+    <div><b>발행일</b><span>2026-05-10</span></div>
+  </section>
+
+  <h2>종합 평가</h2>
+  <div class="summary">
+    <div class="grade">
+      <div class="label">OVERALL</div>
+      <div class="big">A</div>
+      <div class="score">92.4 / 100</div>
+      <div class="stamp">우수<br>학생</div>
+    </div>
+    <div class="stats">
+      <div class="stat">
+        <div class="name">활동일수</div>
+        <div class="num">26일</div>
+        <div class="delta">▲ 전월 대비 +3일</div>
+      </div>
+      <div class="stat">
+        <div class="name">총 세션</div>
+        <div class="num">147회</div>
+        <div class="delta">▲ +18%</div>
+      </div>
+      <div class="stat">
+        <div class="name">메시지</div>
+        <div class="num">2,418</div>
+        <div class="delta">▲ +24%</div>
+      </div>
+      <div class="stat">
+        <div class="name">사용 토큰</div>
+        <div class="num">38.2M</div>
+        <div class="delta">▲ +12%</div>
+      </div>
+      <div class="stat">
+        <div class="name">총 사용 시간</div>
+        <div class="num">71h 24m</div>
+        <div class="delta">▲ +6h</div>
+      </div>
+      <div class="stat">
+        <div class="name">평균 세션</div>
+        <div class="num">29분</div>
+        <div class="delta down">▼ -3분</div>
+      </div>
+    </div>
+  </section>
+
+  <h2>과목별 성적</h2>
+  <table class="subjects">
+    <thead>
+      <tr>
+        <th style="width:22%">과목</th>
+        <th style="width:14%">점수</th>
+        <th style="width:10%">등급</th>
+        <th style="width:34%">달성도</th>
+        <th>특이사항</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="subject">코드 작성</td>
+        <td>95</td>
+        <td class="grade-cell g-S">S</td>
+        <td><span class="bar"><i style="width:95%"></i></span></td>
+        <td style="text-align:left">Edit/Write 비율이 매우 안정적</td>
+      </tr>
+      <tr>
+        <td class="subject">디버깅 · 트러블슈팅</td>
+        <td>88</td>
+        <td class="grade-cell g-A">A</td>
+        <td><span class="bar"><i style="width:88%"></i></span></td>
+        <td style="text-align:left">로그 분석 능숙, 재현 단계 정확</td>
+      </tr>
+      <tr>
+        <td class="subject">테스트 작성</td>
+        <td>72</td>
+        <td class="grade-cell g-B">B</td>
+        <td><span class="bar"><i style="width:72%"></i></span></td>
+        <td style="text-align:left">단위 테스트 비율 개선 필요</td>
+      </tr>
+      <tr>
+        <td class="subject">리팩토링</td>
+        <td>90</td>
+        <td class="grade-cell g-A">A</td>
+        <td><span class="bar"><i style="width:90%"></i></span></td>
+        <td style="text-align:left">중복 제거·네이밍 일관성 우수</td>
+      </tr>
+      <tr>
+        <td class="subject">문서화</td>
+        <td>64</td>
+        <td class="grade-cell g-C">C</td>
+        <td><span class="bar"><i style="width:64%"></i></span></td>
+        <td style="text-align:left">README 갱신 누락 잦음</td>
+      </tr>
+      <tr>
+        <td class="subject">Git 협업</td>
+        <td>93</td>
+        <td class="grade-cell g-A">A</td>
+        <td><span class="bar"><i style="width:93%"></i></span></td>
+        <td style="text-align:left">PR 메시지·커밋 단위 모범적</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>학습 활동 분석</h2>
+  <div class="two-col">
+    <div class="panel">
+      <h3>가장 많이 쓴 도구 TOP 5</h3>
+      <ul class="top-list">
+        <li><span class="rank r1">1</span><span>Edit</span><span class="val">612회</span></li>
+        <li><span class="rank r2">2</span><span>Read</span><span class="val">548회</span></li>
+        <li><span class="rank r3">3</span><span>Bash</span><span class="val">421회</span></li>
+        <li><span class="rank">4</span><span>Grep</span><span class="val">203회</span></li>
+        <li><span class="rank">5</span><span>Write</span><span class="val">157회</span></li>
+      </ul>
+    </div>
+    <div class="panel">
+      <h3>언어별 사용 비중</h3>
+      <div class="lang-row"><span>TypeScript</span><span class="lang-bar"><i style="width:42%"></i></span><span>42%</span></div>
+      <div class="lang-row"><span>Python</span><span class="lang-bar"><i style="width:24%"></i></span><span>24%</span></div>
+      <div class="lang-row"><span>Go</span><span class="lang-bar"><i style="width:14%"></i></span><span>14%</span></div>
+      <div class="lang-row"><span>SQL</span><span class="lang-bar"><i style="width:10%"></i></span><span>10%</span></div>
+      <div class="lang-row"><span>Markdown</span><span class="lang-bar"><i style="width:6%"></i></span><span>6%</span></div>
+      <div class="lang-row"><span>기타</span><span class="lang-bar"><i style="width:4%"></i></span><span>4%</span></div>
+    </div>
+  </div>
+
+  <h2>활동 시간대 (요일 × 시각)</h2>
+  <div class="panel" style="padding:14px">
+    <div class="heatmap" id="heatmap"></div>
+    <div class="legend">
+      낮음
+      <span class="sw" style="background:#efe6cf"></span>
+      <span class="sw h1"></span>
+      <span class="sw h2"></span>
+      <span class="sw h3"></span>
+      <span class="sw h4"></span>
+      높음
+    </div>
+  </div>
+
+  <h2>총평</h2>
+  <div class="comment">
+    이번 달은 <b>코드 작성</b>과 <b>Git 협업</b>에서 매우 안정적인 성과를 보여줬습니다.
+    특히 변경 단위를 작게 쪼개 커밋하는 습관과, 디버깅 시 재현 단계를 명확히
+    제시하는 점이 인상적입니다. 다만 <b>테스트 커버리지</b>와 <b>문서화</b>가
+    여전히 약점으로 남아있습니다. 다음 달에는 새 기능 추가 시 단위 테스트를
+    함께 작성하고, README 업데이트를 PR 체크리스트에 포함해 보세요.
+    꾸준한 활동량과 안정적인 결과가 돋보이는 한 달이었습니다.
+    <div class="badges">
+      <span class="badge">📈 활동량 ▲</span>
+      <span class="badge">🛠 도구 활용 우수</span>
+      <span class="badge">📝 문서화 보완 필요</span>
+      <span class="badge">🧪 테스트 비중 ↑ 권장</span>
+    </div>
+  </div>
+
+  <footer>
+    <div>본 성적표는 <code>~/.claude/usage-data/report.html</code> 데이터를 기반으로 자동 생성되었습니다. (샘플)</div>
+    <div class="seal">CLAUDE<br>OFFICIAL</div>
+  </footer>
+</main>
+
+<script>
+  // 히트맵 생성: 7일 × 24시간
+  (function () {
+    const days = ["월", "화", "수", "목", "금", "토", "일"];
+    const root = document.getElementById("heatmap");
+    if (!root) return;
+
+    // 헤더(시간)
+    const corner = document.createElement("div");
+    corner.className = "hour-label";
+    corner.textContent = "";
+    root.appendChild(corner);
+    for (let h = 0; h < 24; h++) {
+      const c = document.createElement("div");
+      c.className = "hour-label";
+      c.textContent = h % 3 === 0 ? h : "";
+      root.appendChild(c);
+    }
+
+    // 샘플 강도 패턴(평일 오전·오후, 야간 사용 많음)
+    const pattern = {
+      0: [0,0,0,0,0,0,0,1,2,3,3,3,2,3,4,4,3,3,2,2,3,3,2,1],
+      1: [0,0,0,0,0,0,0,1,2,3,4,4,2,3,4,4,4,3,3,2,3,3,2,1],
+      2: [0,0,0,0,0,0,0,1,2,3,4,3,2,3,3,4,4,3,2,2,2,3,2,1],
+      3: [0,0,0,0,0,0,0,1,2,3,3,3,2,3,4,4,3,3,2,2,2,3,2,1],
+      4: [0,0,0,0,0,0,0,1,2,3,3,3,2,2,3,3,3,2,2,1,2,2,1,0],
+      5: [0,0,0,0,0,0,0,0,1,1,2,2,2,2,2,1,1,1,1,2,2,2,1,0],
+      6: [0,0,0,0,0,0,0,0,0,1,1,1,1,1,2,2,1,1,1,2,2,1,1,0],
+    };
+    for (let d = 0; d < 7; d++) {
+      const lab = document.createElement("div");
+      lab.className = "day-label";
+      lab.textContent = days[d];
+      root.appendChild(lab);
+      for (let h = 0; h < 24; h++) {
+        const cell = document.createElement("div");
+        const v = pattern[d][h];
+        cell.className = "cell" + (v > 0 ? " h" + v : "");
+        cell.title = `${days[d]} ${h}시 · 강도 ${v}`;
+        root.appendChild(cell);
+      }
+    }
+  })();
+</script>
+</body>
+</html>
